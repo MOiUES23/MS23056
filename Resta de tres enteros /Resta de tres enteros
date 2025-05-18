@@ -1,1 +1,74 @@
+; ================================================
+; Resta de tres enteros (16 bits)
+; Asignatura: Diseño y Estructura de Computadoras
+; Carnet: MS23056
+; ================================================
+
+section .data
+    num1 dw 15              ; Primer número
+    num2 dw 7               ; Segundo número
+    num3 dw 3               ; Tercer número
+    resultado dw 0          ; Variable para el resultado
+    mensaje db "Resultado: ", 0
+
+section .bss
+    buffer resb 6           ; Espacio para el resultado en ASCII
+
+section .text
+global _start
+
+_start:
+    ; Realizar la resta
+    mov ax, [num1]
+    sub ax, [num2]
+    sub ax, [num3]
+    mov [resultado], ax
+
+    ; Si el valor es negativo, mostramos un signo '-' y hacemos complemento a 2
+    cmp ax, 0
+    jge positivo
+    neg ax
+    mov byte [buffer], '-'
+    mov edi, buffer
+    add edi, 1
+    jmp convertir_a_ascii
+
+positivo:
+    mov edi, buffer
+
+    ; Convertir el resultado a ASCII
+    mov ecx, 0
+    mov bx, 10
+
+convertir_a_ascii:
+    xor dx, dx
+    div bx
+    add dl, '0'
+    mov [edi], dl
+    inc edi
+    inc ecx
+    test ax, ax
+    jnz convertir_a_ascii
+
+    ; Final de cadena
+    mov byte [edi], 0
+
+    ; Escribir en pantalla
+    mov edx, 9
+    mov ecx, mensaje
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+    ; Escribir el buffer
+    mov edx, 6
+    mov ecx, buffer
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+    ; Salir del programa
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
 
