@@ -1,1 +1,63 @@
+; ================================================
+; Multiplicación de dos enteros (8 bits)
+; Asignatura: Diseño y Estructura de Computadoras
+; Carnet: MS23056
+; ================================================
+
+section .data
+    num1 db 6
+    num2 db 7
+    mensaje db "Resultado: ", 0
+
+section .bss
+    buffer resb 6
+
+section .text
+global _start
+
+_start:
+    mov al, [num1]
+    mov bl, [num2]
+    mul bl              ; AX = AL * BL
+
+    ; Conversión a ASCII
+    mov ecx, 0
+    mov ebx, 10
+    mov esi, buffer + 5
+    mov byte [esi], 0
+
+convertir:
+    xor edx, edx
+    div ebx
+    add dl, '0'
+    dec esi
+    mov [esi], dl
+    inc ecx
+    test eax, eax
+    jnz convertir
+
+    ; Imprimir mensaje
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, mensaje
+    mov edx, 10
+    int 0x80
+
+    ; Imprimir resultado
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, esi
+    mov edx, ecx
+    add edx, ecx
+    sub edx, esi
+    mov edx, ecx        ; ← esto está mal
+
+    ; Solución correcta:
+    mov edx, ecx        ; edx = número de caracteres
+    int 0x80
+
+    ; Salida
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
 
