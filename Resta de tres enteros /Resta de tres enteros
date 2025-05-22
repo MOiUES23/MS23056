@@ -8,63 +8,72 @@ section .data
     num1 dw 15              ; Primer número
     num2 dw 7               ; Segundo número
     num3 dw 3               ; Tercer número
-    resultado dw 0          ; Variable para el resultado
     mensaje db "Resultado: ", 0
+    saltoLinea db 10
 
 section .bss
-    buffer resb 6           ; Espacio para el resultado en ASCII
+    buffer resb 7           ; +1 por si hay signo negativo
 
 section .text
-global _start
+    global _start
 
 _start:
     ; Realizar la resta
     mov ax, [num1]
     sub ax, [num2]
     sub ax, [num3]
-    mov [resultado], ax
 
-    ; Si el valor es negativo, mostramos un signo '-' y hacemos complemento a 2
-    cmp ax, 0
-    jge positivo
-    neg ax
-    mov byte [buffer], '-'
-    mov edi, buffer
-    add edi, 1
-    jmp convertir_a_ascii
+    ; Guardamos en EAX para la conversión
+    movsx eax, ax           ; Sign extend AX → EAX (porque puede ser negativo)
 
-positivo:
-    mov edi, buffer
+    ; Comprobar si es negativo
+    cmp eax, 0
+    jge convertir
+    neg eax
+    mov byte [buffer], '-'  ; signo negativo
+    mov esi, buffer + 1
+    jmp convertir_ascii
 
-    ; Convertir el resultado a ASCII
+convertir:
+    mov esi, buffer         ; sin signo
+
+convertir_ascii:
+    mov edi, esi
     mov ecx, 0
-    mov bx, 10
-
-convertir_a_ascii:
-    xor dx, dx
-    div bx
-    add dl, '0'
-    mov [edi], dl
-    inc edi
-    inc ecx
-    test ax, ax
-    jnz convertir_a_ascii
-
-    ; Final de cadena
+    mov ebx, 10
+    add edi, 5              ; apunta al final del buffer
     mov byte [edi], 0
 
-    ; Escribir en pantalla
-    mov edx, 9
-    mov ecx, mensaje
-    mov ebx, 1
+reverse_loop:
+    xor edx, edx
+    div ebx
+    add dl, '0'
+    dec edi
+    mov [edi], dl
+    inc ecx
+    test eax, eax
+    jnz reverse_loop
+
+    ; Imprimir mensaje
     mov eax, 4
+    mov ebx, 1
+    mov ecx, mensaje
+    mov edx, 10
     int 0x80
 
-    ; Escribir el buffer
-    mov edx, 6
-    mov ecx, buffer
-    mov ebx, 1
+    ; Imprimir resultado
     mov eax, 4
+    mov ebx, 1
+    mov ecx, edi            ; desde donde empieza el número
+    mov edx, buffer + 6
+    sub edx, edi            ; longitud
+    int 0x80
+
+    ; Imprimir salto de línea
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, saltoLinea
+    mov edx, 1
     int 0x80
 
     ; Salir del programa
