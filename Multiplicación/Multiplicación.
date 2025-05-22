@@ -8,17 +8,21 @@ section .data
     num1 db 6
     num2 db 7
     mensaje db "Resultado: ", 0
+    saltoLinea db 10
 
 section .bss
     buffer resb 6
 
 section .text
-global _start
+    global _start
 
 _start:
     mov al, [num1]
     mov bl, [num2]
     mul bl              ; AX = AL * BL
+
+    ; Convertir AX a EAX para conversión a ASCII
+    movzx eax, ax       ; Copiar AX a EAX sin signo
 
     ; Conversión a ASCII
     mov ecx, 0
@@ -47,17 +51,18 @@ convertir:
     mov eax, 4
     mov ebx, 1
     mov ecx, esi
-    mov edx, ecx
-    add edx, ecx
+    mov edx, buffer + 5
     sub edx, esi
-    mov edx, ecx        ; ← esto está mal
+    int 0x80
 
-    ; Solución correcta:
-    mov edx, ecx        ; edx = número de caracteres
+    ; Imprimir salto de línea
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, saltoLinea
+    mov edx, 1
     int 0x80
 
     ; Salida
     mov eax, 1
     xor ebx, ebx
     int 0x80
-
