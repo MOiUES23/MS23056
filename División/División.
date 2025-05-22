@@ -1,3 +1,9 @@
+; ================================================
+; División de dos enteros (32 bits)
+; Asignatura: Diseño y Estructura de Computadoras
+; Carnet: MS23056
+; ================================================
+
 section .data
     num1    dd 100        ; Dividendo
     num2    dd 5          ; Divisor
